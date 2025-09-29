@@ -9,7 +9,18 @@ on:
     branches: [ main, master ]
 
 jobs:
+  code-style-check:
+    name: Code Style Check
+
+    steps:
+      # Шаг 1: Проверяем стиль кода с помощью flake8
+      - name: Run flake8
+        run: |
+          pip install flake8
+          flake8 . --max-line-length=100 --exclude=.git,__pycache__,venv,.github --count --statistics
+
   security-scan:
+    need: code-style-check
     name: Security Scan
     runs-on: ubuntu-latest # Запускаем на последнем Ubuntu-раннере от GitHub
     
@@ -30,12 +41,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest # Устанавливаем pytest для запуска тестов
-
-      # Шаг 3.1: Проверяем стиль кода с помощью flake8
-      - name: Run flake8
-        run: |
-          pip install flake8
-          flake8 . --max-line-length --exclude=.git,__pycache__,venv,.github --count --statistics
       
       # Шаг 4: Запускаем SAST-сканер (Bandit) для анализа исходного кода
       - name: Run Bandit SAST Scan
@@ -66,15 +71,6 @@ jobs:
             echo "Bandit report not found. Assuming no issues."
           fi
       
-      # Шаг 4.2: Сохранение отчета Bandit
-      - name: Upload Bandit Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bandit-security-report
-          path: bandit_results.json
-          retention-days: 30
-      
       # Шаг 5: Запускаем сканер зависимостей Trivy
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -90,3 +86,18 @@ jobs:
       - name: Run Tests with pytest
         run: |
           python -m pytest tests/ -v
+
+  save-badnit-results:
+    if: ${{ always() }}
+    need: security-scan
+    name: Save Bandit results
+
+    steps:
+      # Шаг 1: Сохранение отчета Bandit
+      - name: Upload Bandit Report
+        # if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit_results.json
+          retention-days: 30
