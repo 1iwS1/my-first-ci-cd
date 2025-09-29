@@ -21,9 +21,10 @@ jobs:
           flake8 . --max-line-length=100 --exclude=.git,__pycache__,venv,.github --count --statistics
 
   security-scan:
-    need: code-style-check
     name: Security Scan
     runs-on: ubuntu-latest # Запускаем на последнем Ubuntu-раннере от GitHub
+    
+    need: code-style-check
     
     steps:
       # Шаг 1: Получаем код из репозитория
