@@ -60,6 +60,15 @@ jobs:
             echo "Bandit report not found. Assuming no issues."
           fi
       
+      # Шаг 4.2: Сохранение отчета Bandit
+      - name: Upload Bandit Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit_results.json
+          retention-days: 30
+      
       # Шаг 5: Запускаем сканер зависимостей Trivy
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
