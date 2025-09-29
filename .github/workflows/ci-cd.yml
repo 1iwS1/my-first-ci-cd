@@ -11,6 +11,7 @@ on:
 jobs:
   code-style-check:
     name: Code Style Check
+    runs-on: ubuntu-latest
 
     steps:
       # Шаг 1: Проверяем стиль кода с помощью flake8
@@ -88,9 +89,9 @@ jobs:
           python -m pytest tests/ -v
 
   save-badnit-results:
+    name: Save Bandit results
     if: ${{ always() }}
     need: security-scan
-    name: Save Bandit results
 
     steps:
       # Шаг 1: Сохранение отчета Bandit
